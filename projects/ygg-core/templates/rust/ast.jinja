@@ -1,0 +1,77 @@
+use super::*;
+
+{%- set rules = self.grammar.rules() %}
+
+{%- for rule in rules.clone() %}
+#[automatically_derived]
+impl YggdrasilNode for {{ rule.node_name() }} {
+    type Rule = {{ self.grammar.rule_name() }};
+
+    fn get_range(&self) -> Range<usize> {
+{%- if rule.is_class() %}
+        Range { start: self.span.start as usize, end: self.span.end as usize }
+{%- else %}
+        match self {
+{%- for (name, variant) in rule.union_fields() %}
+{%- if variant.is_empty() %}
+            Self::{{ name }} => Range::default(),
+{%- else if variant.as_single().is_some() %}
+            Self::{{ name }}(s) => s.get_range(),
+{%- else %}
+            Self::{{ name }} {..} => Range::default(),
+{%- endif %}
+{%- endfor %}
+        }
+{%- endif %}
+    }
+    fn from_pair(pair: TokenPair<Self::Rule>) -> Result<Self, YggdrasilError<Self::Rule>> {
+{%- if rule.is_class() %}
+        let _span = pair.get_span();
+        Ok(Self {
+{%- for field in rule.class_fields() %}
+{%- if field.field_type(self.grammar).is_empty() %}
+            // Missing rule {{ field.rhs }}
+{%- else %}
+{%- if field.count.is_one() %}
+            {{ field.field_name()|safe_rust_id }}: pair.take_tagged_one::<{{ field.field_type(self.grammar) }}>(Cow::Borrowed("{{ field.field_name() }}"))?,
+{%- else if field.count.is_optional() %}
+            {{ field.field_name()|safe_rust_id }}: pair.take_tagged_option::<{{ field.field_type(self.grammar) }}>(Cow::Borrowed("{{ field.field_name() }}")),
+{%- else %}
+            {{ field.field_name()|safe_rust_id }}: pair.take_tagged_items::<{{ field.field_type(self.grammar) }}>(Cow::Borrowed("{{ field.field_name() }}")).collect::<Result<Vec<_>, _>>()?,
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- if rule.captures.text %}
+            text: pair.get_string(),
+{%- endif %}
+            span: Range { start: _span.start() as {{ self.config.range_type }}, end: _span.end() as {{ self.config.range_type }} },
+        })
+{%- else if rule.is_union() %}
+        let _span = pair.get_span();
+{%- for (name, variant) in rule.union_fields() %}
+{%- if variant.is_empty() %}
+        if let Some(_) = pair.find_first_tag("{{ name|snake_case }}") {
+            return Ok(Self::{{ name }})
+{%- else if variant.as_single().is_some() %}
+        if let Ok(s) = pair.take_tagged_one::<{{ variant.as_single().unwrap().field_type(self.grammar) }}>(Cow::Borrowed("{{ name|snake_case }}")) {
+            return Ok(Self::{{ name }}(s));
+{%- else %}
+        if let Ok(s) = pair.take_tagged_one(Cow::Borrowed("{{ name|snake_case }}")) {
+            unimplemented!()
+{%- endif %}
+        }
+    {%- endfor %}
+        Err(YggdrasilError::invalid_node({{ self.grammar.rule_name() }}::{{ rule.name.text|safe_rust_id }}, _span))
+{%- endif %}
+    }
+}
+#[automatically_derived]
+impl FromStr for {{ rule.node_name() }} {
+    type Err = YggdrasilError<{{ self.grammar.rule_name() }}>;
+
+    fn from_str(input: &str) -> Result<Self, YggdrasilError<{{ self.grammar.rule_name() }}>> {
+        Self::from_cst({{ self.grammar.parser_name() }}::parse_cst(input, {{ self.grammar.rule_name() }}::{{ rule.name.text|safe_rust_id }})?)
+    }
+}
+{%- endfor %}
+

@@ -4,11 +4,9 @@
 *.vs
 
 # Cargo
-build
-examples
-!examples/ast.rs
 /target/
 Cargo.lock
+
 
 # Node
 node_modules
@@ -16,12 +14,24 @@ node_modules
 *.test.js
 package-lock.json
 
+
 # Antlr
+*.jar
+*.zip
 *.antlr
 *.ps1
 *.m
 *.nb
+projects/tree-sitter-ygg/bindings/**/*
+projects/tree-sitter-ygg/src/grammar.json
+projects/tree-sitter-ygg/src/node-types.json
+projects/ygg-pest/src/ygg.rs
+binding.gyp
+parser.exp
+parser.lib
+parser.obj
+scanner.obj
 
-
-
-
+# Ignore
+projects/tree-sitter-calc/**/*
+projects/tree-sitter-cli/**/*

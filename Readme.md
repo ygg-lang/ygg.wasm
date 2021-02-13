@@ -1,28 +1,58 @@
-# tree-sitter-rust
-
-[![Build/test](https://github.com/tree-sitter/tree-sitter-rust/actions/workflows/ci.yml/badge.svg)](https://github.com/tree-sitter/tree-sitter-rust/actions/workflows/ci.yml)
-
-Rust grammar for [tree-sitter](https://github.com/tree-sitter/tree-sitter)
+# Yggdrasil Generative Grammar
 
 ## Features
 
-* **Speed** - When initially parsing a file, `tree-sitter-rust` takes around twice as long as Rustc's hand-coded parser.
+## Language Tutorial
 
-  ```sh
-  $ wc -l examples/ast.rs
-    2157 examples/ast.rs
+- basic syntax
 
-  $ rustc -Z ast-json-noexpand -Z time-passes examples/ast.rs | head -n1
-    time: 0.007	parsing # (7 ms)
+|    Name    | Description                  |
+|:----------:|------------------------------|
+|    `a?`    | Optional element             |
+|    `a*`    | Zero or more elements        |
+|    `a+`    | One or more elements         |
+|   `a b`    | Sequence of elements         |
+|  `a \| b`  | Alternative of branch        |
+|  `name:e`  | Mark element with given name |
+|  `#Name`   | Mark branch with given name  |      
+|  `^rule`   | Remark element               |
+| `@macro()` | Macro call                   |        
+|   `ANY`    | Any unicode characters       |
+| `IGNORED`  | All rules marked as ignored  |
 
-  $ tree-sitter parse examples/ast.rs --quiet --time
-    examples/ast.rs	16 ms
-  ```
+- `class` vs `union`
 
-  But if you *edit* the file after parsing it, this parser can generally *update* the previous existing syntax tree to reflect your edit in less than a millisecond, thanks to Tree-sitter's incremental parsing system.
+The same syntax `A | B` performs differently in `class` and `union` context.
 
-## References
+```yggdrasil
+// expand `A | B` as class
+class TestA {
+    | tag_a:A 
+    | tag_b:B
+}
+// expand `A | B` as union
+union TestB {
+    | A #BranchA
+    | B #BranchB
+}
+```
 
-* [The Rust Grammar Reference](https://doc.rust-lang.org/grammar.html) - The grammar reference provides chapters that formally define the language grammar.
-* [The Rust Reference](https://doc.rust-lang.org/reference/) - While Rust does not have a specification, the reference tries to describe its working in detail. It tends to be out of date.
-* [Syntax Index](https://doc.rust-lang.org/book/first-edition/syntax-index.html) - This appendix from The Book contains examples of all syntax in Rust cross-referenced with the section of The Book that describes it.
+```rust
+struct TestA {
+    tag_a: A,
+    tag_b: B,
+}
+
+enum TestB {
+    BranchA(A),
+    BranchB(B),
+}
+```
+
+- examples
+
+You can learn more from [project-yggdrasil](https://github.com/ygg-lang/project-yggdrasil/tree/master/languages).
+
+## Tools
+
+- [JetBrains Support](https://plugins.jetbrains.com/plugin/20594-yggdrasil-support)
