@@ -10,8 +10,8 @@ use core::str::FromStr;
 use std::{borrow::Cow, ops::Range, sync::OnceLock};
 use yggdrasil_rt::*;
 
-type Input<'i> = Box<State<'i, BootstrapRule>>;
-type Output<'i> = Result<Box<State<'i, BootstrapRule>>, Box<State<'i, BootstrapRule>>>;
+type Input<'i> = Box<State<BootstrapRule>>;
+type Output<'i> = Result<Box<State<BootstrapRule>>, Box<State<BootstrapRule>>>;
 
 #[doc = include_str!("railway.min.svg")]
 #[repr(C)]

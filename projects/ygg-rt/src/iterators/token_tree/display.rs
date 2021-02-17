@@ -1,6 +1,6 @@
 use super::*;
 
-impl<'i, R> Debug for TokenTree<'i, R>
+impl<'i, R> Debug for TokenTree<R>
 where
     R: YggdrasilRule,
 {
@@ -9,7 +9,7 @@ where
     }
 }
 
-impl<'i, R> Display for TokenTree<'i, R>
+impl<'i, R> Display for TokenTree<R>
 where
     R: YggdrasilRule,
 {
@@ -18,7 +18,7 @@ where
     }
 }
 
-impl<'i, R> TokenTree<'i, R>
+impl<'i, R> TokenTree<R>
 where
     R: YggdrasilRule,
 {

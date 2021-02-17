@@ -4,7 +4,7 @@
 ///     increased speed when pushing to the queue
 ///   * it finds its pair in O(1) time instead of O(N), since pair positions are known at parse time
 ///     and can easily be stored instead of recomputed
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum TokenQueue<R> {
     /// Start
     Start {

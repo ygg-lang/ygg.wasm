@@ -1,6 +1,6 @@
 use super::*;
 
-impl<'i, N> Iterator for TokenTreeFilterTag<'i, N>
+impl<N> Iterator for TokenTreeFilterTag<N>
 where
     N: YggdrasilNode,
 {
@@ -15,7 +15,7 @@ where
     }
 }
 
-impl<'i, N> Iterator for TokenTreeFilterRule<'i, N>
+impl<N> Iterator for TokenTreeFilterRule<N>
 where
     N: YggdrasilNode,
 {

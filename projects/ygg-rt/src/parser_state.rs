@@ -2,7 +2,7 @@ use crate::{
     enhance::stack::Stack,
     errors::{YggdrasilError, YggdrasilErrorKind},
     position::Position,
-    span::TextSpan,
+    span::{InputString, TextSpan},
     TokenQueue, TokenTree, YggdrasilRule,
 };
 use alloc::{boxed::Box, rc::Rc, vec, vec::Vec};
@@ -49,12 +49,12 @@ pub enum MatchDirection {
 /// The complete state of a [`Parser`].
 ///
 /// [`Parser`]: trait.Parser.html
-#[derive(Debug)]
-pub struct State<'i, R>
+#[derive(Clone, Debug)]
+pub struct State<R>
 where
     R: YggdrasilRule,
 {
-    position: Position<'i>,
+    position: Position,
     queue: Vec<TokenQueue<R>>,
     lookahead: Lookahead,
     pos_attempts: Vec<R>,
@@ -73,9 +73,9 @@ where
 /// state::<(), _>(input, |s| Ok(s)).unwrap();
 /// ```
 #[allow(clippy::perf)]
-pub fn state<'i, R, F>(input: &'i str, f: F) -> Result<TokenTree<'i, R>, YggdrasilError<R>>
+pub fn state<R, F>(input: InputString, f: F) -> Result<TokenTree<R>, YggdrasilError<R>>
 where
-    F: FnOnce(Box<State<'i, R>>) -> Either<Box<State<'i, R>>>,
+    F: FnOnce(Box<State<R>>) -> Either<Box<State<R>>>,
     R: YggdrasilRule,
 {
     let state = State::new(input);
@@ -103,7 +103,7 @@ where
     }
 }
 
-impl<'i, R> State<'i, R>
+impl<R> State<R>
 where
     R: YggdrasilRule,
 {
@@ -117,7 +117,7 @@ where
     /// let input = "";
     /// let state: Box<State<&str>> = State::new(input);
     /// ```
-    pub fn new(input: &'i str) -> Box<Self> {
+    pub fn new(input: InputString) -> Box<Self> {
         Box::new(State {
             position: Position::from_start(input),
             queue: vec![],
@@ -147,7 +147,7 @@ where
     /// let position = state.position();
     /// assert_eq!(position.pos(), 0);
     /// ```
-    pub fn position(&self) -> &Position<'i> {
+    pub fn position(&self) -> &Position {
         &self.position
     }
 
@@ -368,7 +368,7 @@ where
         let token_index = self.queue.len();
         let initial = self.position;
 
-        let result = f(self);
+        let result = f(self.clone());
 
         match result {
             Ok(new) => Ok(new),

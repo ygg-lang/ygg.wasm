@@ -1,4 +1,5 @@
 use super::*;
+use crate::span::InputString;
 
 mod display;
 
@@ -8,20 +9,20 @@ mod display;
 /// [`yggdrasil_rt::state`]: ../fn.state.html
 /// [`Pair::into_inner`]: struct.Pair.html#method.into_inner
 #[derive(Clone)]
-pub struct TokenTree<'i, R> {
+pub struct TokenTree<R> {
     queue: Rc<Vec<TokenQueue<R>>>,
-    input: &'i str,
+    input: InputString,
     start: usize,
     end: usize,
     pairs_count: usize,
 }
 
-impl<'i, R> TokenTree<'i, R>
+impl<'i, R> TokenTree<R>
 where
     R: YggdrasilRule,
 {
     /// Create a new token tree from token stream
-    pub fn new(queue: Rc<Vec<TokenQueue<R>>>, input: &'i str, start: usize, end: usize) -> Self {
+    pub fn new(queue: Rc<Vec<TokenQueue<R>>>, input: InputString, start: usize, end: usize) -> Self {
         let mut pairs_count = 0;
         let mut cursor = start;
         while cursor < end {
@@ -35,7 +36,7 @@ where
     }
 }
 
-impl<'i, R: YggdrasilRule> TokenTree<'i, R> {
+impl<'i, R: YggdrasilRule> TokenTree<R> {
     /// Captures a slice from the `&str` defined by the starting position of the first token `Pair`
     /// and the ending position of the last token `Pair` of the `Pairs`. This also captures
     /// the input between those two token `Pair`s.
@@ -64,15 +65,16 @@ impl<'i, R: YggdrasilRule> TokenTree<'i, R> {
     /// ```
     #[inline]
     pub fn as_str(&self) -> &'i str {
-        if self.start < self.end {
-            let start = self.pos(self.start);
-            let end = self.pos(self.end - 1);
-            // Generated positions always come from Positions and are UTF-8 borders.
-            &self.input[start..end]
-        }
-        else {
-            ""
-        }
+        // if self.start < self.end {
+        //     let start = self.pos(self.start);
+        //     let end = self.pos(self.end - 1);
+        //     // Generated positions always come from Positions and are UTF-8 borders.
+        //     &self.input[start..end]
+        // }
+        // else {
+        //     ""
+        // }
+        todo!()
     }
 
     /// Returns the input string of `Pairs`.
@@ -107,7 +109,8 @@ impl<'i, R: YggdrasilRule> TokenTree<'i, R> {
     /// assert_eq!(input, pairs.get_input());
     /// ```
     pub fn get_input(&self) -> &'i str {
-        self.input
+        // self.input
+        todo!()
     }
 
     /// Captures inner token `Pair`s and concatenates resulting `&str`s. This does not capture
@@ -167,7 +170,7 @@ impl<'i, R: YggdrasilRule> TokenTree<'i, R> {
     /// assert_eq!(tokens.len(), 4);
     /// ```
     #[inline]
-    pub fn flatten(self) -> TokenStream<'i, R> {
+    pub fn flatten(self) -> TokenStream<R> {
         unsafe { token_stream::new(self.queue, self.input, self.start, self.end) }
     }
 
@@ -218,8 +221,8 @@ impl<'i, R: YggdrasilRule> TokenTree<'i, R> {
     /// assert_eq!(left_numbers.next(), None);
     /// ```
     #[inline]
-    pub fn find_tagged(self, tag: &str) -> Filter<TokenStream<'i, R>, impl FnMut(&TokenPair<'i, R>) -> bool + '_> {
-        self.flatten().filter(move |pair: &TokenPair<'i, R>| matches!(pair.get_tag(), Some(nt) if nt == tag))
+    pub fn find_tagged(self, tag: &str) -> Filter<TokenStream<R>, impl FnMut(&TokenPair<R>) -> bool + '_> {
+        self.flatten().filter(move |pair: &TokenPair<R>| matches!(pair.get_tag(), Some(nt) if nt == tag))
     }
 
     /// Returns the `Tokens` for the `Pairs`.
@@ -246,13 +249,13 @@ impl<'i, R: YggdrasilRule> TokenTree<'i, R> {
     /// assert_eq!(tokens.len(), 2);
     /// ```
     #[inline]
-    pub fn tokens(self) -> Tokens<'i, R> {
+    pub fn tokens(self) -> Tokens<R> {
         tokens::new(self.queue, self.input, self.start, self.end)
     }
 
     /// Peek at the first inner `Pair` without changing the position of this iterator.
     #[inline]
-    pub fn peek(&self) -> Option<TokenPair<'i, R>> {
+    pub fn peek(&self) -> Option<TokenPair<R>> {
         if self.start < self.end {
             Some(unsafe { token_pair::new(Rc::clone(&self.queue), self.input, self.start) })
         }
@@ -282,15 +285,15 @@ impl<'i, R: YggdrasilRule> TokenTree<'i, R> {
     }
 }
 
-impl<'i, R: YggdrasilRule> ExactSizeIterator for TokenTree<'i, R> {
+impl<'i, R: YggdrasilRule> ExactSizeIterator for TokenTree<R> {
     #[inline]
     fn len(&self) -> usize {
         self.pairs_count
     }
 }
 
-impl<'i, R: YggdrasilRule> Iterator for TokenTree<'i, R> {
-    type Item = TokenPair<'i, R>;
+impl<'i, R: YggdrasilRule> Iterator for TokenTree<R> {
+    type Item = TokenPair<R>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let pair = self.peek()?;
@@ -306,7 +309,7 @@ impl<'i, R: YggdrasilRule> Iterator for TokenTree<'i, R> {
     }
 }
 
-impl<'i, R: YggdrasilRule> DoubleEndedIterator for TokenTree<'i, R> {
+impl<'i, R: YggdrasilRule> DoubleEndedIterator for TokenTree<R> {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.end <= self.start {
             return None;
@@ -321,21 +324,21 @@ impl<'i, R: YggdrasilRule> DoubleEndedIterator for TokenTree<'i, R> {
     }
 }
 
-impl<'i, R: PartialEq> PartialEq for TokenTree<'i, R> {
-    fn eq(&self, other: &TokenTree<'i, R>) -> bool {
+impl<'i, R: PartialEq> PartialEq for TokenTree<R> {
+    fn eq(&self, other: &TokenTree<R>) -> bool {
         Rc::ptr_eq(&self.queue, &other.queue)
-            && ptr::eq(self.input, other.input)
+            && ptr::eq(&self.input, &other.input)
             && self.start == other.start
             && self.end == other.end
     }
 }
 
-impl<'i, R: Eq> Eq for TokenTree<'i, R> {}
+impl<'i, R: Eq> Eq for TokenTree<R> {}
 
-impl<'i, R: Hash> Hash for TokenTree<'i, R> {
+impl<'i, R: Hash> Hash for TokenTree<R> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         (&*self.queue as *const Vec<TokenQueue<R>>).hash(state);
-        (self.input as *const str).hash(state);
+        self.input.hash(state);
         self.start.hash(state);
         self.end.hash(state);
     }

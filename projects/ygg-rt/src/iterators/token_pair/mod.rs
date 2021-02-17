@@ -1,4 +1,5 @@
 use super::*;
+use crate::span::InputString;
 
 mod filter;
 
@@ -11,42 +12,42 @@ mod filter;
 ///
 /// [`Token`]: ../enum.Token.html
 #[derive(Clone)]
-pub struct TokenPair<'i, R> {
+pub struct TokenPair<R> {
     /// # Safety
     ///
     /// All `QueueableToken`s' `input_pos` must be valid character boundary indices into `input`.
     queue: Rc<Vec<TokenQueue<R>>>,
-    input: &'i str,
+    input: InputString,
     /// Token index into `queue`.
     start: usize,
 }
 
 /// find tags in toke pair
-pub struct TokenTreeFilterTag<'i, N>
+pub struct TokenTreeFilterTag<N>
 where
     N: YggdrasilNode,
 {
-    tree: TokenTree<'i, N::Rule>,
+    tree: TokenTree<N::Rule>,
     target: Cow<'static, str>,
 }
 
 /// find tags in toke pair
-pub struct TokenTreeFilterRule<'i, N>
+pub struct TokenTreeFilterRule<N>
 where
     N: YggdrasilNode,
 {
-    tree: TokenTree<'i, N::Rule>,
+    tree: TokenTree<N::Rule>,
     target: N::Rule,
 }
 
 /// # Safety
 ///
 /// All `QueueableToken`s' `input_pos` must be valid character boundary indices into `input`.
-pub unsafe fn new<R: YggdrasilRule>(queue: Rc<Vec<TokenQueue<R>>>, input: &str, start: usize) -> TokenPair<R> {
+pub unsafe fn new<R: YggdrasilRule>(queue: Rc<Vec<TokenQueue<R>>>, input: InputString, start: usize) -> TokenPair<R> {
     TokenPair { queue, input, start }
 }
 
-impl<'i, R: YggdrasilRule> TokenPair<'i, R> {
+impl<'i, R: YggdrasilRule> TokenPair<R> {
     /// Returns the `Rule` of the `Pair`.
     ///
     /// # Examples
@@ -105,11 +106,12 @@ impl<'i, R: YggdrasilRule> TokenPair<'i, R> {
     /// ```
     #[inline]
     pub fn as_str(&self) -> &'i str {
-        let start = self.p(self.start);
-        let end = self.p(self.pair());
+        // let start = self.p(self.start);
+        // let end = self.p(self.pair());
 
         // Generated positions always come from Positions and are UTF-8 borders.
-        &self.input[start..end]
+        // &self.input[start..end]
+        todo!()
     }
     /// Get String
     #[inline]
@@ -148,7 +150,8 @@ impl<'i, R: YggdrasilRule> TokenPair<'i, R> {
     /// assert_eq!(input, pair.get_input());
     /// ```
     pub fn get_input(&self) -> &'i str {
-        self.input
+        // self.input
+        todo!()
     }
 
     /// Returns the `Span` defined by the `Pair`, **without** consuming it.
@@ -181,7 +184,7 @@ impl<'i, R: YggdrasilRule> TokenPair<'i, R> {
         let end = self.p(self.pair());
 
         // Generated positions always come from Positions and are UTF-8 borders.
-        unsafe { TextSpan::new_unchecked(self.input, start, end) }
+        unsafe { TextSpan::new_unchecked(self.input.clone(), start, end) }
     }
 
     /// Get current node tag
@@ -218,9 +221,9 @@ impl<'i, R: YggdrasilRule> TokenPair<'i, R> {
     /// assert!(pair.into_inner().next().is_none());
     /// ```
     #[inline]
-    pub fn into_inner(self) -> TokenTree<'i, R> {
+    pub fn into_inner(self) -> TokenTree<R> {
         let pair = self.pair();
-        TokenTree::new(self.queue, self.input, self.start + 1, pair)
+        TokenTree::new(self.queue, self.input.clone(), self.start + 1, pair)
     }
     /// check
     #[inline]
@@ -364,7 +367,7 @@ impl<'i, R: YggdrasilRule> TokenPair<'i, R> {
     /// assert_eq!(tokens.len(), 2);
     /// ```
     #[inline]
-    pub fn tokens(self) -> Tokens<'i, R> {
+    pub fn tokens(self) -> Tokens<R> {
         let end = self.pair();
 
         tokens::new(self.queue, self.input, self.start, end + 1)
@@ -384,15 +387,15 @@ impl<'i, R: YggdrasilRule> TokenPair<'i, R> {
     }
 }
 
-impl<'i, R: YggdrasilRule> TokenTree<'i, R> {
+impl<'i, R: YggdrasilRule> TokenTree<R> {
     /// Create a new `Pairs` iterator containing just the single `Pair`.
-    pub fn single(pair: TokenPair<'i, R>) -> Self {
+    pub fn single(pair: TokenPair<R>) -> Self {
         let end = pair.pair();
         TokenTree::new(pair.queue, pair.input, pair.start, end)
     }
 }
 
-impl<'i, R: YggdrasilRule> Debug for TokenPair<'i, R> {
+impl<'i, R: YggdrasilRule> Debug for TokenPair<R> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let pair = &mut f.debug_struct("Pair");
         pair.field("rule", &self.get_tag());
@@ -404,7 +407,7 @@ impl<'i, R: YggdrasilRule> Debug for TokenPair<'i, R> {
     }
 }
 
-impl<'i, R: YggdrasilRule> Display for TokenPair<'i, R> {
+impl<'i, R: YggdrasilRule> Display for TokenPair<R> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let rule = self.get_rule();
         let start = self.p(self.start);
@@ -427,18 +430,18 @@ impl<'i, R: YggdrasilRule> Display for TokenPair<'i, R> {
     }
 }
 
-impl<'i, R: PartialEq> PartialEq for TokenPair<'i, R> {
-    fn eq(&self, other: &TokenPair<'i, R>) -> bool {
-        Rc::ptr_eq(&self.queue, &other.queue) && ptr::eq(self.input, other.input) && self.start == other.start
+impl<'i, R: PartialEq> PartialEq for TokenPair<R> {
+    fn eq(&self, other: &TokenPair<R>) -> bool {
+        Rc::ptr_eq(&self.queue, &other.queue) && ptr::eq(&self.input, &other.input) && self.start == other.start
     }
 }
 
-impl<'i, R: Eq> Eq for TokenPair<'i, R> {}
+impl<'i, R: Eq> Eq for TokenPair<R> {}
 
-impl<'i, R: Hash> Hash for TokenPair<'i, R> {
+impl<'i, R: Hash> Hash for TokenPair<R> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         (&*self.queue as *const Vec<TokenQueue<R>>).hash(state);
-        (self.input as *const str).hash(state);
+        self.input.hash(state);
         self.start.hash(state);
     }
 }

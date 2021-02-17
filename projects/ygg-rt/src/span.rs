@@ -9,13 +9,18 @@ use core::{
 
 use crate::position;
 
+#[derive(Clone, Hash)]
+pub struct InputString {
+    repr: Rc<str>,
+}
+
 /// A span over a `&str`. It is created from either [two `Position`s] or from a [`Pair`].
 ///
 /// [two `Position`s]: struct.Position.html#method.span
 /// [`Pair`]: ../iterators/struct.Pair.html#method.span
 #[derive(Clone)]
 pub struct TextSpan {
-    pub(crate) input: Rc<str>,
+    pub(crate) input: InputString,
     /// # Safety
     ///
     /// Must be a valid character boundary index into `input`.
@@ -39,7 +44,7 @@ impl<'i> TextSpan {
     /// # Safety
     ///
     /// `input[start..end]` must be a valid subslice; that is, said indexing should not panic.
-    pub(crate) unsafe fn new_unchecked(input: &str, start: usize, end: usize) -> TextSpan {
+    pub(crate) unsafe fn new_unchecked(input: InputString, start: usize, end: usize) -> TextSpan {
         debug_assert!(input.get(start..end).is_some());
         TextSpan { input: Rc::from(input), start, end }
     }
@@ -55,7 +60,7 @@ impl<'i> TextSpan {
     /// assert_eq!(None, TextSpan::new(input, 100, 0));
     /// assert!(TextSpan::new(input, 0, input.len()).is_some());
     /// ```
-    pub fn new(input: &str, start: usize, end: usize) -> Option<TextSpan> {
+    pub fn new(input: InputString, start: usize, end: usize) -> Option<TextSpan> {
         if input.get(start..end).is_some() { Some(TextSpan { input: Rc::from(input), start, end }) } else { None }
     }
 

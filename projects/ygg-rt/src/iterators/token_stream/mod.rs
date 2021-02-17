@@ -1,4 +1,5 @@
 use super::*;
+use crate::span::InputString;
 
 mod display;
 
@@ -6,12 +7,12 @@ mod display;
 ///
 /// [`Pair`]: struct.Pair.html
 /// [`Pairs::flatten`]: struct.Pairs.html#method.flatten
-pub struct TokenStream<'i, R> {
+pub struct TokenStream<R> {
     /// # Safety
     ///
     /// All `QueueableToken`s' `input_pos` must be valid character boundary indices into `input`.
     queue: Rc<Vec<TokenQueue<R>>>,
-    input: &'i str,
+    input: InputString,
     start: usize,
     end: usize,
 }
@@ -19,11 +20,16 @@ pub struct TokenStream<'i, R> {
 /// # Safety
 ///
 /// All `QueueableToken`s' `input_pos` must be valid character boundary indices into `input`.
-pub unsafe fn new<R: YggdrasilRule>(queue: Rc<Vec<TokenQueue<R>>>, input: &str, start: usize, end: usize) -> TokenStream<R> {
+pub unsafe fn new<R: YggdrasilRule>(
+    queue: Rc<Vec<TokenQueue<R>>>,
+    input: InputString,
+    start: usize,
+    end: usize,
+) -> TokenStream<R> {
     TokenStream { queue, input, start, end }
 }
 
-impl<'i, R: YggdrasilRule> TokenStream<'i, R> {
+impl<'i, R: YggdrasilRule> TokenStream<R> {
     /// Returns the `Tokens` for these pairs.
     ///
     /// # Examples
@@ -48,7 +54,7 @@ impl<'i, R: YggdrasilRule> TokenStream<'i, R> {
     /// assert_eq!(tokens.len(), 2);
     /// ```
     #[inline]
-    pub fn tokens(self) -> Tokens<'i, R> {
+    pub fn tokens(self) -> Tokens<R> {
         tokens::new(self.queue, self.input, self.start, self.end)
     }
 
@@ -76,15 +82,15 @@ impl<'i, R: YggdrasilRule> TokenStream<'i, R> {
     }
 }
 
-impl<'i, R: YggdrasilRule> ExactSizeIterator for TokenStream<'i, R> {
+impl<'i, R: YggdrasilRule> ExactSizeIterator for TokenStream<R> {
     fn len(&self) -> usize {
         // Tokens len is exactly twice as flatten pairs len
         (self.end - self.start) >> 1
     }
 }
 
-impl<'i, R: YggdrasilRule> Iterator for TokenStream<'i, R> {
-    type Item = TokenPair<'i, R>;
+impl<'i, R: YggdrasilRule> Iterator for TokenStream<R> {
+    type Item = TokenPair<R>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.start >= self.end {
@@ -103,7 +109,7 @@ impl<'i, R: YggdrasilRule> Iterator for TokenStream<'i, R> {
     }
 }
 
-impl<'i, R: YggdrasilRule> DoubleEndedIterator for TokenStream<'i, R> {
+impl<'i, R: YggdrasilRule> DoubleEndedIterator for TokenStream<R> {
     fn next_back(&mut self) -> Option<Self::Item> {
         if self.end <= self.start {
             return None;
@@ -117,8 +123,8 @@ impl<'i, R: YggdrasilRule> DoubleEndedIterator for TokenStream<'i, R> {
     }
 }
 
-impl<'i, R: Clone> Clone for TokenStream<'i, R> {
-    fn clone(&self) -> TokenStream<'i, R> {
+impl<'i, R: Clone> Clone for TokenStream<R> {
+    fn clone(&self) -> TokenStream<R> {
         TokenStream { queue: Rc::clone(&self.queue), input: self.input, start: self.start, end: self.end }
     }
 }

@@ -52,7 +52,7 @@ mod highlighters;
 pub mod input;
 
 /// Output result alias
-pub type OutputResult<'i, R> = Result<TokenTree<'i, R>, YggdrasilError<R>>;
+pub type OutputResult<'i, R> = Result<TokenTree<R>, YggdrasilError<R>>;
 
 /// Define rules subject to Yggdrasil
 pub trait YggdrasilRule: Clone + Debug + Eq + Hash + Ord {

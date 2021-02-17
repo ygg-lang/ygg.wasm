@@ -1,6 +1,6 @@
 use super::*;
 
-impl<'i, R> Debug for TokenStream<'i, R>
+impl<'i, R> Debug for TokenStream<R>
 where
     R: YggdrasilRule,
 {

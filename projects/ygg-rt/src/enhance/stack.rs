@@ -12,7 +12,7 @@ use core::ops::{Index, Range};
 
 /// Implementation of a `Stack` which maintains popped elements and length of previous states
 /// in order to rewind the stack to a previous state.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Stack<T: Clone> {
     /// All elements in the stack.
     cache: Vec<T>,

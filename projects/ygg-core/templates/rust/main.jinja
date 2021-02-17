@@ -14,8 +14,8 @@ use yggdrasil_rt::*;
 {%- set rule_name = self.grammar.rule_name() %}
 {%- set parser_name = self.grammar.parser_name() %}
 
-type Input<'i> = Box<State<'i, {{ rule_name }}>>;
-type Output<'i> = Result<Box<State<'i, {{ rule_name }}>>, Box<State<'i, {{ rule_name}}>>>;
+type Input<'i> = Box<State< {{ rule_name }}>>;
+type Output<'i> = Result<Box<State< {{ rule_name }}>>, Box<State< {{ rule_name}}>>>;
 
 #[doc = include_str!("railway.min.svg")]
 #[repr(C)]
