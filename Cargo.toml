@@ -2,10 +2,10 @@
 resolver = "2"
 members = ["projects/*"]
 default-members = [
-    "projects/bootstrap",
-    "projects/ygg-ir",
-    "projects/ygg-rt",
-    "projects/ygg-cli",
+    #    "projects/bootstrap",
+    #    "projects/ygg-ir",
+    #    "projects/ygg-rt",
+    #    "projects/ygg-cli",
 ]
 exclude = [
     "projects/.DS_Store",

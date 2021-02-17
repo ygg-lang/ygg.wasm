@@ -1,3 +1,0 @@
-Yggdrasil Shared Error Handlers
-===============================
-

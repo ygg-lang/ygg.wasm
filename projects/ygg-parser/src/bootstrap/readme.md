@@ -1,3 +1,0 @@
-# BootstrapParser
-
-![Railway](./railway.svg)

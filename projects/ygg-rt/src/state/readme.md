@@ -1,1 +1,0 @@
-Handle state transitions of parsed streams

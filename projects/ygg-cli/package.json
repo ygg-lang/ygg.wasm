@@ -1,6 +1,0 @@
-{
-    "private": true,
-    "scripts": {
-        "i": "cargo install --path . --debug"
-    }
-}
