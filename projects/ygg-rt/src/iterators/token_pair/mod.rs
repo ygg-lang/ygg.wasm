@@ -176,7 +176,7 @@ impl<'i, R: YggdrasilRule> TokenPair<'i, R> {
     /// assert_eq!(pair.get_span().as_str(), "ab");
     /// ```
     #[inline]
-    pub fn get_span(&self) -> TextSpan<'i> {
+    pub fn get_span(&self) -> TextSpan {
         let start = self.p(self.start);
         let end = self.p(self.pair());
 

@@ -1,3 +1,4 @@
+use alloc::rc::Rc;
 use core::{
     fmt,
     fmt::{Display, Formatter},
@@ -12,9 +13,9 @@ use crate::position;
 ///
 /// [two `Position`s]: struct.Position.html#method.span
 /// [`Pair`]: ../iterators/struct.Pair.html#method.span
-#[derive(Clone, Copy)]
-pub struct TextSpan<'i> {
-    pub(crate) input: &'i str,
+#[derive(Clone)]
+pub struct TextSpan {
+    pub(crate) input: Rc<str>,
     /// # Safety
     ///
     /// Must be a valid character boundary index into `input`.
@@ -25,22 +26,22 @@ pub struct TextSpan<'i> {
     pub(crate) end: usize,
 }
 
-impl<'i> Display for TextSpan<'i> {
+impl<'i> Display for TextSpan {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let view = &self.input[self.start..self.end];
         write!(f, "({}, {}): \x1b[32m{:?}\x1b[0m", self.start, self.end, view)
     }
 }
 
-impl<'i> TextSpan<'i> {
+impl<'i> TextSpan {
     /// Create a new `Span` without checking invariants. (Checked with `debug_assertions`.)
     ///
     /// # Safety
     ///
     /// `input[start..end]` must be a valid subslice; that is, said indexing should not panic.
-    pub(crate) unsafe fn new_unchecked(input: &str, start: usize, end: usize) -> TextSpan<'_> {
+    pub(crate) unsafe fn new_unchecked(input: &str, start: usize, end: usize) -> TextSpan {
         debug_assert!(input.get(start..end).is_some());
-        TextSpan { input, start, end }
+        TextSpan { input: Rc::from(input), start, end }
     }
 
     /// Attempts to create a new span. Will return `None` if `input[start..end]` is an invalid index
@@ -54,8 +55,8 @@ impl<'i> TextSpan<'i> {
     /// assert_eq!(None, TextSpan::new(input, 100, 0));
     /// assert!(TextSpan::new(input, 0, input.len()).is_some());
     /// ```
-    pub fn new(input: &str, start: usize, end: usize) -> Option<TextSpan<'_>> {
-        if input.get(start..end).is_some() { Some(TextSpan { input, start, end }) } else { None }
+    pub fn new(input: &str, start: usize, end: usize) -> Option<TextSpan> {
+        if input.get(start..end).is_some() { Some(TextSpan { input: Rc::from(input), start, end }) } else { None }
     }
 
     /// Attempts to create a new span based on a sub-range.
@@ -70,7 +71,7 @@ impl<'i> TextSpan<'i> {
     /// ```
     ///
     /// # Examples
-    pub fn get(&self, range: impl RangeBounds<usize>) -> Option<TextSpan<'i>> {
+    pub fn get(&self, range: impl RangeBounds<usize>) -> Option<TextSpan> {
         let start = match range.start_bound() {
             Bound::Included(offset) => *offset,
             Bound::Excluded(offset) => *offset + 1,
@@ -82,7 +83,11 @@ impl<'i> TextSpan<'i> {
             Bound::Unbounded => self.as_str().len(),
         };
 
-        self.as_str().get(start..end).map(|_| TextSpan { input: self.input, start: self.start + start, end: self.start + end })
+        self.as_str().get(start..end).map(|_| TextSpan {
+            input: self.input.clone(),
+            start: self.start + start,
+            end: self.start + end,
+        })
     }
 
     /// Returns the `Span`'s start byte position as a `usize`.
@@ -135,9 +140,9 @@ impl<'i> TextSpan<'i> {
     /// assert_eq!(span.start_pos(), start);
     /// ```
     #[inline]
-    pub fn start_pos(&self) -> position::Position<'i> {
+    pub fn start_pos(&self) -> position::Position {
         // Span's start position is always a UTF-8 border.
-        unsafe { position::Position::new_unchecked(self.input, self.start) }
+        unsafe { position::Position::new_unchecked(&self.input, self.start) }
     }
 
     /// Returns the `Span`'s end `Position`.
@@ -154,9 +159,9 @@ impl<'i> TextSpan<'i> {
     /// assert_eq!(span.end_pos(), end);
     /// ```
     #[inline]
-    pub fn end_pos(&self) -> position::Position<'i> {
+    pub fn end_pos(&self) -> position::Position {
         // Span's end position is always a UTF-8 border.
-        unsafe { position::Position::new_unchecked(self.input, self.end) }
+        unsafe { position::Position::new_unchecked(&self.input, self.end) }
     }
 
     /// Splits the `Span` into a pair of `Position`s.
@@ -173,10 +178,10 @@ impl<'i> TextSpan<'i> {
     /// assert_eq!(span.split(), (start, end));
     /// ```
     #[inline]
-    pub fn split(self) -> (position::Position<'i>, position::Position<'i>) {
+    pub fn split(self) -> (position::Position, position::Position) {
         // Span's start and end positions are always a UTF-8 borders.
-        let pos1 = unsafe { position::Position::new_unchecked(self.input, self.start) };
-        let pos2 = unsafe { position::Position::new_unchecked(self.input, self.end) };
+        let pos1 = unsafe { position::Position::new_unchecked(&self.input, self.start) };
+        let pos2 = unsafe { position::Position::new_unchecked(&self.input, self.end) };
 
         (pos1, pos2)
     }
@@ -200,7 +205,7 @@ impl<'i> TextSpan<'i> {
     /// assert_eq!(span.as_str(), "b");
     /// ```
     #[inline]
-    pub fn as_str(&self) -> &'i str {
+    pub fn as_str(&self) -> &str {
         // Span's start and end positions are always a UTF-8 borders.
         &self.input[self.start..self.end]
     }
@@ -222,8 +227,8 @@ impl<'i> TextSpan<'i> {
     /// let span = TextSpan::new(input, 1, 7).unwrap();
     /// assert_eq!(span.get_input(), input);
     /// ```
-    pub fn get_input(&self) -> &'i str {
-        self.input
+    pub fn get_input(&self) -> &str {
+        &self.input
     }
 
     /// Iterates over all lines (partially) covered by this span. Yielding a `&str` for each line.
@@ -276,23 +281,23 @@ impl<'i> TextSpan<'i> {
     }
 }
 
-impl<'i> fmt::Debug for TextSpan<'i> {
+impl<'i> fmt::Debug for TextSpan {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.debug_struct("Span").field("str", &self.as_str()).field("start", &self.start).field("end", &self.end).finish()
     }
 }
 
-impl<'i> PartialEq for TextSpan<'i> {
-    fn eq(&self, other: &TextSpan<'i>) -> bool {
-        ptr::eq(self.input, other.input) && self.start == other.start && self.end == other.end
+impl<'i> PartialEq for TextSpan {
+    fn eq(&self, other: &TextSpan) -> bool {
+        ptr::eq(&self.input, &other.input) && self.start == other.start && self.end == other.end
     }
 }
 
-impl<'i> Eq for TextSpan<'i> {}
+impl Eq for TextSpan {}
 
-impl<'i> Hash for TextSpan<'i> {
+impl Hash for TextSpan {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        (self.input as *const str).hash(state);
+        self.input.hash(state);
         self.start.hash(state);
         self.end.hash(state);
     }
@@ -339,7 +344,7 @@ impl<'i> Hash for TextSpan<'i> {
 /// let merged = merge_spans(&span1, &span2);
 /// assert!(merged.is_none());
 /// ```
-pub fn merge_spans<'i>(a: &TextSpan<'i>, b: &TextSpan<'i>) -> Option<TextSpan<'i>> {
+pub fn merge_spans<'i>(a: &TextSpan, b: &TextSpan) -> Option<TextSpan> {
     if a.end() >= b.start() && a.start() <= b.end() {
         // The spans overlap or are contiguous, so they can be merged.
         TextSpan::new(a.get_input(), core::cmp::min(a.start(), b.start()), core::cmp::max(a.end(), b.end()))
@@ -356,17 +361,17 @@ pub fn merge_spans<'i>(a: &TextSpan<'i>, b: &TextSpan<'i>) -> Option<TextSpan<'i
 ///
 /// [`Span::lines_span()`]: struct.Span.html#method.lines_span
 pub struct LinesSpan<'i> {
-    span: &'i TextSpan<'i>,
+    span: &'i TextSpan,
     pos: usize,
 }
 
 impl<'i> Iterator for LinesSpan<'i> {
-    type Item = TextSpan<'i>;
+    type Item = TextSpan;
     fn next(&mut self) -> Option<Self::Item> {
         if self.pos > self.span.end {
             return None;
         }
-        let pos = position::Position::new(self.span.input, self.pos)?;
+        let pos = position::Position::new(&self.span.input, self.pos)?;
         if pos.match_eoi() {
             return None;
         }
@@ -374,7 +379,7 @@ impl<'i> Iterator for LinesSpan<'i> {
         let line_start = pos.find_line_start();
         self.pos = pos.find_line_end();
 
-        TextSpan::new(self.span.input, line_start, self.pos)
+        TextSpan::new(&self.span.input, line_start, self.pos)
     }
 }
 

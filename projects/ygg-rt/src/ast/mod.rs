@@ -1,5 +1,5 @@
 use crate::{errors::YggdrasilErrorKind, TextSpan, TokenPair, TokenTree, YggdrasilError, YggdrasilRule};
-use alloc::format;
+use alloc::{format, rc::Rc};
 use core::{fmt::Debug, ops::Range};
 
 /// A typed ast node
@@ -20,7 +20,7 @@ pub trait YggdrasilNode: Clone + Debug {
             Some(s) => Self::from_pair(s),
             None => Err(YggdrasilError::new_from_span(
                 YggdrasilErrorKind::CustomError { message: format!("no child: {}", tree.as_str()) },
-                TextSpan { input: "", start: 0, end: 0 },
+                TextSpan { input: Rc::from(""), start: 0, end: 0 },
             )),
         }
     }
@@ -28,7 +28,7 @@ pub trait YggdrasilNode: Clone + Debug {
     fn from_pair(pair: TokenPair<Self::Rule>) -> Result<Self, YggdrasilError<Self::Rule>> {
         Err(YggdrasilError::new_from_span(
             YggdrasilErrorKind::CustomError { message: format!("unimplemented {:?}", pair) },
-            TextSpan { input: "", start: 0, end: 0 },
+            TextSpan { input: Rc::from(""), start: 0, end: 0 },
         ))
     }
 }

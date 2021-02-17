@@ -73,7 +73,7 @@ impl<R: YggdrasilRule> YggdrasilError<R> {
     ///
     /// println!("{}", error);
     /// ```
-    pub fn new_from_span(variant: YggdrasilErrorKind<R>, span: TextSpan<'_>) -> YggdrasilError<R> {
+    pub fn new_from_span(variant: YggdrasilErrorKind<R>, span: TextSpan) -> YggdrasilError<R> {
         let end = span.end_pos();
         // let end_line_col = end.line_column();
         // end position is after a \n, so we want to point to the visual lf symbol

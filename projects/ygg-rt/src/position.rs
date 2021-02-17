@@ -95,7 +95,7 @@ impl<'i> Position<'i> {
     /// assert_eq!(span.end(), 0);
     /// ```
     #[inline]
-    pub fn span(&self, other: &Position<'i>) -> TextSpan<'i> {
+    pub fn span(&self, other: &Position<'i>) -> TextSpan {
         if ptr::eq(self.input, other.input) {
             // This is safe because the pos field of a Position should always be a valid str index.
             unsafe { TextSpan::new_unchecked(self.input, self.position, other.position) }

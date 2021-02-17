@@ -60,7 +60,7 @@ where
     pos_attempts: Vec<R>,
     neg_attempts: Vec<R>,
     attempt_pos: usize,
-    stack: Stack<TextSpan<'i>>,
+    stack: Stack<TextSpan>,
 }
 
 /// Creates a `ParserState` from a `&str`, supplying it to a closure `f`.
@@ -859,8 +859,9 @@ where
     /// ```
     #[inline]
     pub fn stack_peek(self: Box<Self>) -> Either<Box<Self>> {
-        let string = self.stack.peek().expect("peek was called on empty stack").as_str();
-        self.match_string(string, false)
+        // let string = self.stack.peek().expect("peek was called on empty stack").as_str();
+        // self.match_string(string, false)
+        todo!()
     }
 
     /// Pops the top of the stack and attempts to match the string. Returns `Ok(Box<ParserState>)`
@@ -884,8 +885,8 @@ where
     /// ```
     #[inline]
     pub fn stack_pop(mut self: Box<Self>) -> Either<Box<Self>> {
-        let string = self.stack.pop().expect("pop was called on empty stack").as_str();
-        self.match_string(string, false)
+        let string = self.stack.pop().expect("pop was called on empty stack");
+        self.match_string(string.as_str(), false)
     }
 
     /// Matches part of the state of the stack.
@@ -932,7 +933,7 @@ where
         let mut position = self.position;
         let result = {
             let mut iter_b2t = self.stack[range].iter();
-            let matcher = |span: &TextSpan<'_>| position.match_string(span.as_str());
+            let matcher = |span: &TextSpan| position.match_string(span.as_str());
             match match_dir {
                 MatchDirection::BottomToTop => iter_b2t.all(matcher),
                 MatchDirection::TopToBottom => iter_b2t.rev().all(matcher),
