@@ -6,12 +6,15 @@ world host {
   export listener;
 }
 
-interface shared {
+interface peg {
+
   resource token-type {
     /// get the unique token id(cross language)
     get-hash: func() -> u64;
     get-language: func() -> language;
+    get-style: func() -> string;
   }
+
   resource language {
     /// get the unique id of the language
     get-hash: func() -> u64;
@@ -58,7 +61,11 @@ interface shared {
 }
 
 interface ast {
-  use shared.{text-range, parse-error, cst-node, language};
+  use peg.{text-range, parse-error, cst-node, language};
+
+  record json-language {
+    super: language
+  }
 
   /// Token type of the language
   enum json-token {
@@ -68,9 +75,6 @@ interface ast {
     json-array
   }
 
-  record json-language {
-    super: language
-  }
 
   record json-base {
     super: cst-node
@@ -91,8 +95,9 @@ interface ast {
   }
 
   resource json-array-node {
-    ctor: static func(base: json-base) -> result<json-array-node, parse-error>;
-    parse: static func(text: string, offset: u32) -> result<json-array-node, parse-error>;
+    ctor: static func(super: json-base) -> result<json-array-node, parse-error>;
+    parse-string: static func(text: string, offset: u32) -> result<json-array-node, parse-error>;
+    get-super: func() -> json-base;
     item: func() -> list<json-node>;
   }
 }
