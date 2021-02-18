@@ -23,7 +23,7 @@ pub mod choice;
 mod concat;
 
 /// Represent a parsed value
-pub type Parsed<'i, T> = (ParseState<'i>, T);
+pub type Parsed<T> = (ParseState, T);
 
 /// The state of parsing
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]

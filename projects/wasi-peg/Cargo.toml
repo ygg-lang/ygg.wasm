@@ -1,6 +1,7 @@
 [package]
 name = "wasi-peg"
-version = "0.2.4"
+version = "0.0.0"
+publish = false
 authors = ["Aster <192607617@qq.com>"]
 description = "A nightly parser combinator library for Rust."
 homepage = "https://github.com/oovm/pex"
@@ -13,6 +14,7 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
+wit-bindgen = "0.22.0"
 #ucd-trie = { version = "0.1.5", optional = true }
 regex = { version = "1.8.1", optional = true }
 

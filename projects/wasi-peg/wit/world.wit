@@ -1,0 +1,37 @@
+package peg: core;
+
+world host {
+  export types;
+  export combinators;
+}
+
+interface types {
+  resource parse-state {
+
+  }
+
+}
+
+interface combinators {
+  use types.{parse-state};
+
+  resource character-matcher {
+constructor(c: char, case-sensitive: bool);
+    match: func(state: parse-state) -> parse-state;
+  }
+
+  resource text-matcher {
+constructor(s: string, case-sensitive: bool);
+    match: func(state: parse-state) -> parse-state;
+  }
+
+
+}
+
+interface visitor {
+
+}
+
+interface listener {
+
+}
