@@ -4,6 +4,7 @@ pub use crate::wit::PegHost;
 
 wit_bindgen::generate!({
 
+
     world: "host",
 });
 

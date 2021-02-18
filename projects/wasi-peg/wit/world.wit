@@ -7,31 +7,41 @@ world host {
 
 interface types {
   resource parse-state {
-
+    get-input: func() -> string;
+    get-rest: func() -> string;
   }
 
+  variant parse-error {
+    missing-character(missing-character),
+    missing-character-range(missing-character-range)
+  }
+
+  record missing-character {
+    c: char,
+    position: u32
+  }
+
+  record missing-character-range {
+    start: char,
+    end: char,
+    position: u32
+  }
+
+  resource cst-node {
+
+  }
 }
 
 interface combinators {
-  use types.{parse-state};
+  use types.{parse-state, parse-error};
 
   resource character-matcher {
 constructor(c: char, case-sensitive: bool);
-    match: func(state: parse-state) -> parse-state;
+    parse: func(state: parse-state) -> result<tuple<parse-state, cst-node>, parse-error>;
   }
 
   resource text-matcher {
 constructor(s: string, case-sensitive: bool);
-    match: func(state: parse-state) -> parse-state;
+    parse: func(state: parse-state) -> result<tuple<parse-state, cst-node>, parse-error>;
   }
-
-
-}
-
-interface visitor {
-
-}
-
-interface listener {
-
 }
