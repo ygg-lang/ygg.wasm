@@ -18,13 +18,13 @@ interface types {
 
   record missing-character {
     c: char,
-    position: u32
+    position: u32,
   }
 
   record missing-character-range {
     start: char,
     end: char,
-    position: u32
+    position: u32,
   }
 
   resource cst-node {
@@ -33,7 +33,7 @@ interface types {
 }
 
 interface combinators {
-  use types.{parse-state, parse-error};
+  use types.{parse-state, parse-error, cst-node};
 
   resource character-matcher {
 constructor(c: char, case-sensitive: bool);

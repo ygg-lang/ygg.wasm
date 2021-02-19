@@ -1,24 +1,29 @@
 use super::*;
-use crate::exports::peg::core::combinators::*;
+use crate::{
+    exports::peg::core::{combinators::*, types::MissingCharacter},
+    states::WasiParseState,
+};
 use std::ops::Add;
 
 impl Guest for PegHost {
     type CharacterMatcher = WasiCharacterMatcher;
     type TextMatcher = WasiStringMatcher;
 }
+
 impl GuestCharacterMatcher for WasiCharacterMatcher {
     fn new(c: char, case_sensitive: bool) -> Self {
-        WasiCharacterMatcher { c, case_sensitive }
+        WasiCharacterMatcher { range: c..=c, case_sensitive }
     }
 
-    fn match_(&self, state: ParseState) -> Result<(ParseState, char), ParseError> {
+    fn parse(&self, state: ParseState) -> Result<(ParseState, CstNode), ParseError> {
         let state: WasiParseState = state.into_inner::<WasiParseState>();
-        match state.input.starts_with(self.c) {
-            true => state.advance_char(self.c),
-            false => {}
+        match state.next_char() {
+            Some(s) => match self.range.contains(&s) {
+                true => Ok(state.advance_char(s)),
+                false => Err(ParseError::MissingCharacter(MissingCharacter { c: s, position: 0 })),
+            },
+            None => Err(ParseError::MissingCharacter(MissingCharacter { c: '?', position: 0 })),
         }
-
-        Ok((ParseState::new(state), 'a'))
     }
 }
 
@@ -27,7 +32,7 @@ impl GuestTextMatcher for WasiStringMatcher {
         todo!()
     }
 
-    fn match_(&self, state: ParseState) -> Result<(ParseState, String), ParseError> {
+    fn parse(&self, state: ParseState) -> Result<(ParseState, CstNode), ParseError> {
         todo!()
     }
 }

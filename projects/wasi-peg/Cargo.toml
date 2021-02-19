@@ -1,5 +1,5 @@
 [package]
-name = "wasi-peg"
+name = "wasi-peg2"
 version = "0.0.0"
 publish = false
 authors = ["Aster <192607617@qq.com>"]
