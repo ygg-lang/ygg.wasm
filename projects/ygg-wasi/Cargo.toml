@@ -1,5 +1,5 @@
 [package]
-name = "wit-bindgen-yggdrasil"
+name = "yggdrasil-wasi"
 publish = false
 version = "0.0.0"
 authors = ["Aster <192607617@qq.com>"]
@@ -18,6 +18,11 @@ crate-type = ["cdylib"]
 
 [dependencies]
 wit-bindgen = "0.22.0"
+rctree = "0.6.0"
+
+[dependencies.yggdrasil-rt]
+version = "0.1.1"
+#path = 'C:\Users\Dell\CLionProjects\yggdrasil.rs\projects\ygg-rt'
 
 [features]
 default = []

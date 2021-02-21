@@ -1,7 +1,7 @@
 use super::*;
 use crate::exports::yggdrasil::json::ast::*;
 
-impl Guest for JsonHost {
+impl Guest for YggdrasilHost {
     type JsonNumberNode = WasmNumberNode;
     type JsonStringNode = WasmStringNode;
     type JsonArrayNode = WasmArrayNode;

@@ -1,6 +1,6 @@
-mod ast;
+mod cst;
 
-pub struct JsonHost {}
+pub struct YggdrasilHost {}
 
 pub struct WasmBase {}
 

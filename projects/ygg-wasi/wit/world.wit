@@ -1,58 +1,45 @@
-package yggdrasil: json;
+package peg: core;
 
 world host {
-  export ast;
+  export cst;
   export visitor;
   export listener;
 }
 
-interface peg {
-
-  resource token-type {
-    /// get the unique token id(cross language)
-    get-hash: func() -> u64;
-    get-language: func() -> language;
-    get-style: func() -> string;
-  }
-
-  resource language {
-    /// get the unique id of the language
-    get-hash: func() -> u64;
-    /// get the display name of the language(non-unique)
-    get-name: func() -> string;
-  }
-
+interface types {
   record text-range {
-    /// utf8 offset of the start
-    head: u32,
-      /// utf8 offset of the end
-    tail: u32,
+    head-offset: u32,
+    tail-offset: u32,
+  }
+}
+
+interface cst {
+  use types.{text-range};
+
+  resource syntax-rule {
+
   }
 
-  variant parse-error {
-    fail
-  }
-
-  resource cst-node {
+  resource syntax-node {
     is-leaf: func() -> bool;
     get-hash: func() -> u64;
     get-range: func() -> text-range;
-    get-token: func() -> token-type;
+    get-rule: func() -> syntax-rule;
     get-text: func() -> list<string>;
-    get-parent: func() -> option<cst-node>;
-    get-ancestors: func(include-self: bool) -> cst-iterator;
+    get-parent: func() -> option<syntax-iterator>;
+    get-ancestors: func(include-self: bool) -> syntax-iterator;
     get-last: func() -> option<cst-node>;
-    get-last-iterator: func(include-self: bool) -> cst-iterator;
+    get-last-iterator: func(include-self: bool) -> syntax-iterator;
     get-next: func() -> option<cst-node>;
-    get-next-iterator: func(include-self: bool) -> cst-iterator;
-    get-siblings: func() -> cst-iterator;
-    get-children: func() -> cst-iterator;
-    get-descendants: func(depth-first: bool) -> cst-iterator;
+    get-next-iterator: func(include-self: bool) -> syntax-iterator;
+    get-siblings: func() -> syntax-iterator;
+    get-children: func() -> syntax-iterator;
+    get-descendants: func(depth-first: bool) -> syntax-iterator;
   }
 
-  resource cst-iterator {
-    last: func() -> option<cst-node>;
-    next: func() -> option<cst-node>;
+  resource syntax-iterator {
+    last: func() -> option<syntax-node>;
+    next: func() -> option<syntax-node>;
     move-head: func();
     move-tail: func();
     skip: func(count: u32);
@@ -61,45 +48,7 @@ interface peg {
 }
 
 interface ast {
-  use peg.{text-range, parse-error, cst-node, language};
 
-  record json-language {
-    super: language
-  }
-
-  /// Token type of the language
-  enum json-token {
-    json,
-    json-number,
-    json-string,
-    json-array
-  }
-
-
-  record json-base {
-    super: cst-node
-  }
-
-  // AST Types
-  variant json-node {
-    number(json-number-node),
-    str(json-string-node),
-    array(json-array-node)
-  }
-
-  resource json-number-node {
-
-  }
-  resource json-string-node {
-
-  }
-
-  resource json-array-node {
-    ctor: static func(super: json-base) -> result<json-array-node, parse-error>;
-    parse-string: static func(text: string, offset: u32) -> result<json-array-node, parse-error>;
-    get-super: func() -> json-base;
-    item: func() -> list<json-node>;
-  }
 }
 
 interface visitor {
