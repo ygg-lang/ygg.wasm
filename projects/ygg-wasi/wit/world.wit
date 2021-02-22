@@ -26,13 +26,19 @@ interface cst {
     get-range: func() -> text-range;
     get-rule: func() -> syntax-rule;
     get-text: func() -> string;
+    has-parent: func() -> bool;
     get-parent: func() -> option<syntax-node>;
     get-ancestors: func(include-self: bool) -> syntax-iterator;
     get-last: func() -> option<syntax-node>;
     get-last-iterator: func(include-self: bool) -> syntax-iterator;
     get-next: func() -> option<syntax-node>;
     get-next-iterator: func(include-self: bool) -> syntax-iterator;
+    get-silbing-head: func() -> option<syntax-node>;
+    get-sibling-tail: func() -> option<syntax-node>;
     get-siblings: func() -> syntax-iterator;
+    has-child: func() -> bool;
+    get-child-head: func() -> option<syntax-node>;
+    get-child-tail: func() -> option<syntax-node>;
     get-children: func() -> syntax-iterator;
     get-descendants: func(depth-first: bool) -> syntax-iterator;
   }
