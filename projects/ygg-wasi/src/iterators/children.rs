@@ -1,8 +1,9 @@
 use super::*;
 
 impl NativeChildren {
-    pub fn new(parent: &Node<NativeSyntaxData>) -> MaybeReversed<Self> {
-        MaybeReversed { iterator: Self { parent: parent.clone(), current: parent.first_child() }, reversed: false }
+    pub fn new(parent: &Node<NativeSyntaxData>, reversed: bool) -> MaybeReversed<Self> {
+        let current = if reversed { parent.last_child() } else { parent.first_child() };
+        MaybeReversed { iterator: Self { parent: parent.clone(), current }, reversed }
     }
 }
 

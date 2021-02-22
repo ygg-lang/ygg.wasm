@@ -1,10 +1,6 @@
 use super::*;
-use std::ops::Deref;
 
-use crate::{
-    exports::peg::core::cst::*,
-    iterators::{NativeAncestors, NativeChildren, NativeSyntaxIterator},
-};
+use crate::exports::peg::core::cst::*;
 
 impl Guest for YggdrasilHost {
     type SyntaxRule = NativeSyntaxRule;
@@ -12,17 +8,29 @@ impl Guest for YggdrasilHost {
     type SyntaxIterator = NativeSyntaxIterator;
 }
 
-impl GuestSyntaxRule for NativeSyntaxRule {}
+impl GuestSyntaxRule for NativeSyntaxRule {
+    fn get_flags(&self) -> SnytaxFlags {
+        todo!()
+    }
+
+    fn get_language(&self) -> Language {
+        todo!()
+    }
+
+    fn get_tag(&self) -> String {
+        self.tag.to_string()
+    }
+
+    fn get_rule_name(&self) -> String {
+        self.name.to_string()
+    }
+
+    fn get_styles(&self) -> Vec<String> {
+        self.styles.iter().map(|s| s.to_string()).collect()
+    }
+}
 
 impl GuestSyntaxNode for Node<NativeSyntaxData> {
-    fn is_leaf(&self) -> bool {
-        todo!()
-    }
-
-    fn get_hash(&self) -> u64 {
-        todo!()
-    }
-
     fn get_range(&self) -> TextRange {
         let data = self.borrow();
         let range = data.span.clone();
@@ -30,7 +38,7 @@ impl GuestSyntaxNode for Node<NativeSyntaxData> {
     }
 
     fn get_rule(&self) -> SyntaxRule {
-        todo!()
+        SyntaxRule::new(self.borrow().rule.clone())
     }
 
     fn get_text(&self) -> String {
@@ -80,12 +88,16 @@ impl GuestSyntaxNode for Node<NativeSyntaxData> {
         Some(SyntaxNode::new(self.parent()?.last_child()?))
     }
 
-    fn get_siblings(&self) -> SyntaxIterator {
+    fn get_siblings(&self, reversed: bool) -> SyntaxIterator {
         todo!()
     }
 
     fn has_child(&self) -> bool {
         self.has_children()
+    }
+
+    fn count_children(&self) -> u32 {
+        todo!()
     }
 
     fn get_child_head(&self) -> Option<SyntaxNode> {
@@ -96,11 +108,11 @@ impl GuestSyntaxNode for Node<NativeSyntaxData> {
         Some(SyntaxNode::new(self.last_child()?))
     }
 
-    fn get_children(&self) -> SyntaxIterator {
-        SyntaxIterator::new(NativeSyntaxIterator::Children(RefCell::new(NativeChildren::new(self))))
+    fn get_children(&self, reversed: bool) -> SyntaxIterator {
+        SyntaxIterator::new(NativeSyntaxIterator::Children(RefCell::new(NativeChildren::new(self, reversed))))
     }
 
-    fn get_descendants(&self, depth_first: bool) -> SyntaxIterator {
+    fn get_descendants(&self, depth_first: bool, reversed: bool) -> SyntaxIterator {
         todo!()
     }
 }
@@ -119,7 +131,7 @@ impl GuestSyntaxIterator for NativeSyntaxIterator {
                 todo!()
             }
             Self::Children(i) => Some(SyntaxNode::new(i.borrow_mut().backward()?)),
-            Self::Descendants(_) => {
+            Self::Descendants() => {
                 todo!()
             }
         }
@@ -138,7 +150,7 @@ impl GuestSyntaxIterator for NativeSyntaxIterator {
                 todo!()
             }
             Self::Children(i) => Some(SyntaxNode::new(i.borrow_mut().forward()?)),
-            Self::Descendants(_) => {
+            Self::Descendants() => {
                 todo!()
             }
         }
@@ -158,12 +170,12 @@ impl GuestSyntaxIterator for NativeSyntaxIterator {
 
     fn reverse(&self) {
         match self {
-            NativeSyntaxIterator::Ancestors(v) => v.borrow_mut().reverse(),
-            NativeSyntaxIterator::Siblings() => {}
-            NativeSyntaxIterator::Previous() => {}
-            NativeSyntaxIterator::Following() => {}
-            NativeSyntaxIterator::Children(v) => v.borrow_mut().reverse(),
-            NativeSyntaxIterator::Descendants(_) => {}
+            Self::Ancestors(v) => v.borrow_mut().reverse(),
+            Self::Siblings() => {}
+            Self::Previous() => {}
+            Self::Following() => {}
+            Self::Children(v) => v.borrow_mut().reverse(),
+            Self::Descendants() => {}
         }
     }
 }

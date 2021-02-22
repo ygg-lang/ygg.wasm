@@ -1,5 +1,5 @@
 use crate::syntax_node::NativeSyntaxData;
-use rctree::{Children, Node};
+use rctree::Node;
 use std::cell::RefCell;
 
 mod ancestors;
@@ -7,11 +7,11 @@ mod children;
 
 pub enum NativeSyntaxIterator {
     Ancestors(RefCell<MaybeReversed<NativeAncestors>>),
-    Siblings(),
     Previous(),
     Following(),
+    Siblings(),
     Children(RefCell<MaybeReversed<NativeChildren>>),
-    Descendants(RefCell<NativeChildren>),
+    Descendants(),
 }
 pub struct NativeChildren {
     pub parent: Node<NativeSyntaxData>,
@@ -31,7 +31,7 @@ pub struct MaybeReversed<T> {
 
 impl<T> MaybeReversed<T>
 where
-    T: DoubleEndedIterator,
+    T: DoubleEndedIterator<Item = Node<NativeSyntaxData>>,
 {
     pub fn forward(&mut self) -> Option<Node<NativeSyntaxData>> {
         if self.reversed { self.iterator.next_back() } else { self.iterator.next() }
