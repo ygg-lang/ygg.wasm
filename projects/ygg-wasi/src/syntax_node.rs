@@ -6,14 +6,16 @@ use std::{
 };
 use yggdrasil_rt::{TokenPair, YggdrasilRule};
 
-pub struct SyntaxData {
-    language: &'static str,
-    rule: &'static str,
-    text: Rc<str>,
-    span: Range<usize>,
+pub struct NativeSyntaxRule {}
+
+pub struct NativeSyntaxData {
+    pub language: &'static str,
+    pub rule: &'static str,
+    pub text: Rc<str>,
+    pub span: Range<usize>,
 }
 
-impl Debug for SyntaxData {
+impl Debug for NativeSyntaxData {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SyntaxNode")
             .field("language", &self.language)
@@ -23,17 +25,17 @@ impl Debug for SyntaxData {
     }
 }
 
-impl SyntaxData {
-    pub fn new<R: YggdrasilRule>(input: Rc<str>, pair: TokenPair<R>) -> Node<SyntaxData> {
+impl NativeSyntaxData {
+    pub fn new<R: YggdrasilRule>(input: Rc<str>, pair: TokenPair<R>) -> Node<NativeSyntaxData> {
         let rule = pair.get_rule();
-        let parent = Node::new(SyntaxData {
+        let parent = Node::new(NativeSyntaxData {
             language: "json5",
             rule: rule.get_name(),
             text: input.clone(),
             span: pair.get_span().get_range(),
         });
         for child in pair.into_inner() {
-            parent.append(SyntaxData::new(input.clone(), child))
+            parent.append(NativeSyntaxData::new(input.clone(), child))
         }
         parent
     }

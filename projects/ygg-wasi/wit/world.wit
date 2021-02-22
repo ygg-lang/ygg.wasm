@@ -25,12 +25,12 @@ interface cst {
     get-hash: func() -> u64;
     get-range: func() -> text-range;
     get-rule: func() -> syntax-rule;
-    get-text: func() -> list<string>;
-    get-parent: func() -> option<syntax-iterator>;
+    get-text: func() -> string;
+    get-parent: func() -> option<syntax-node>;
     get-ancestors: func(include-self: bool) -> syntax-iterator;
-    get-last: func() -> option<cst-node>;
+    get-last: func() -> option<syntax-node>;
     get-last-iterator: func(include-self: bool) -> syntax-iterator;
-    get-next: func() -> option<cst-node>;
+    get-next: func() -> option<syntax-node>;
     get-next-iterator: func(include-self: bool) -> syntax-iterator;
     get-siblings: func() -> syntax-iterator;
     get-children: func() -> syntax-iterator;
