@@ -3,7 +3,7 @@ resolver = "2"
 members = ["projects/*"]
 default-members = [
     #    "projects/bootstrap",
-    #    "projects/ygg-ir",
+    "projects/ygg-wasi",
     #    "projects/ygg-rt",
     #    "projects/ygg-cli",
 ]

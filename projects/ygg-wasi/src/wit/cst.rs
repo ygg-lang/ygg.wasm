@@ -17,10 +17,6 @@ impl GuestSyntaxRule for NativeSyntaxRule {
         todo!()
     }
 
-    fn get_tag(&self) -> String {
-        self.tag.to_string()
-    }
-
     fn get_rule_name(&self) -> String {
         self.name.to_string()
     }
@@ -36,7 +32,15 @@ impl GuestSyntaxNode for Node<NativeSyntaxData> {
         let range = data.span.clone();
         TextRange { head_offset: range.start as u32, tail_offset: range.end as u32 }
     }
-
+    fn get_tag(&self) -> Option<String> {
+        self.borrow().tag.clone()
+    }
+    fn has_tag(&self, tag: String) -> bool {
+        match self.borrow().tag.as_ref() {
+            Some(s) => tag.eq(s),
+            None => false,
+        }
+    }
     fn get_rule(&self) -> SyntaxRule {
         SyntaxRule::new(self.borrow().rule.clone())
     }
@@ -44,7 +48,7 @@ impl GuestSyntaxNode for Node<NativeSyntaxData> {
     fn get_text(&self) -> String {
         let data = self.borrow();
         let range = data.span.clone();
-        match data.text.get(range) {
+        match data.raw.get(range) {
             Some(s) => s.to_string(),
             None => {
                 panic!("out of range")
@@ -80,7 +84,7 @@ impl GuestSyntaxNode for Node<NativeSyntaxData> {
         todo!()
     }
 
-    fn get_silbing_head(&self) -> Option<SyntaxNode> {
+    fn get_sibling_head(&self) -> Option<SyntaxNode> {
         Some(SyntaxNode::new(self.parent()?.first_child()?))
     }
 
