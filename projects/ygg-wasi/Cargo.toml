@@ -21,8 +21,8 @@ wit-bindgen = "0.23.0"
 rctree = "0.6.0"
 
 [dependencies.yggdrasil-rt]
-version = "0.1.2"
-path = 'C:\Users\Dell\CLionProjects\yggdrasil.rs\projects\ygg-rt'
+version = "0.1.3"
+#path = 'C:\Users\Dell\CLionProjects\yggdrasil.rs\projects\ygg-rt'
 
 [features]
 default = []
