@@ -32,14 +32,11 @@ impl GuestSyntaxNode for Node<NativeSyntaxData> {
         let range = data.span.clone();
         TextRange { head_offset: range.start as u32, tail_offset: range.end as u32 }
     }
-    fn get_tag(&self) -> Option<String> {
+    fn get_tag(&self) -> String {
         self.borrow().tag.clone()
     }
     fn has_tag(&self, tag: String) -> bool {
-        match self.borrow().tag.as_ref() {
-            Some(s) => tag.eq(s),
-            None => false,
-        }
+        self.borrow().tag.eq(&tag)
     }
     fn get_rule(&self) -> SyntaxRule {
         SyntaxRule::new(self.borrow().rule.clone())

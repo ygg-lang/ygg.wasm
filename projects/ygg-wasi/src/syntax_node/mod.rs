@@ -19,7 +19,7 @@ pub struct NativeSyntaxRule {
 #[derive(Debug, Clone)]
 pub struct NativeSyntaxData {
     pub rule: NativeSyntaxRule,
-    pub tag: Option<String>,
+    pub tag: String,
     pub raw: Rc<str>,
     pub span: Range<usize>,
 }
@@ -38,7 +38,7 @@ impl NativeSyntaxData {
                 name: rule.get_name(),
                 styles: vec![rule.get_style().to_string()],
             },
-            tag: pair.get_tag().map(|x| x.to_string()),
+            tag: pair.get_tag().to_string(),
             raw: input.clone(),
             span: pair.get_span().get_range(),
         });

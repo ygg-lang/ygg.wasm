@@ -1,4 +1,4 @@
-package peg: core;
+package peg: core@0.1.0;
 
 world host {
   export types;
@@ -72,7 +72,7 @@ interface cst {
     /// If this is a union node, tag represents branch tag
     /// If this is a class node, tag means node tag
     /// An empty string is equivalent to no tag
-    get-tag: func() -> option<string>;
+    get-tag: func() -> string;
     has-tag: func(name: string) -> bool;
     get-rule: func() -> syntax-rule;
     get-text: func() -> string;

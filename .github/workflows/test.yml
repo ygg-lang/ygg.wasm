@@ -26,7 +26,7 @@ jobs:
         override: true
         components: rustfmt, clippy
     - name: Cargo Build
-      run: cargo build --release
+      run: cargo build --target wasm32-wasi --release
     - name: Find Release
       run: |
         cd target/release/
