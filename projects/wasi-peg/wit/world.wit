@@ -1,47 +1,47 @@
 package peg: core;
 
 world host {
-  export types;
-  export combinators;
+    export types;
+    export combinators;
 }
 
 interface types {
-  resource parse-state {
+resource parse-state {
     get-input: func() -> string;
     get-rest: func() -> string;
-  }
+}
 
-  variant parse-error {
+variant parse-error {
     missing-character(missing-character),
     missing-character-range(missing-character-range)
-  }
+}
 
-  record missing-character {
+record missing-character {
     c: char,
     position: u32,
-  }
+}
 
-  record missing-character-range {
+record missing-character-range {
     start: char,
     end: char,
     position: u32,
-  }
+}
 
-  resource cst-node {
+resource cst-node {
 
-  }
+}
 }
 
 interface combinators {
-  use types.{parse-state, parse-error, cst-node};
+use types.{parse-state, parse-error, cst-node};
 
-  resource character-matcher {
-constructor(c: char, case-sensitive: bool);
+resource character-matcher {
+    constructor(c: char, case-sensitive: bool);
     parse: func(state: parse-state) -> result<tuple<parse-state, cst-node>, parse-error>;
-  }
+}
 
-  resource text-matcher {
-constructor(s: string, case-sensitive: bool);
+resource text-matcher {
+    constructor(s: string, case-sensitive: bool);
     parse: func(state: parse-state) -> result<tuple<parse-state, cst-node>, parse-error>;
-  }
+}
 }

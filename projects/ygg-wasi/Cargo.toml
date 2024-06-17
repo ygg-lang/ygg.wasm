@@ -17,8 +17,11 @@ name = "wasi_yggdrasil"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-wit-bindgen = "0.23.0"
 rctree = "0.6.0"
+
+[dependencies.wit-bindgen]
+version = "0.23.0"
+path = 'C:\Users\Dell\CLionProjects\wit-bindgen\crates\guest-rust'
 
 [dependencies.yggdrasil-rt]
 version = "0.1.3"

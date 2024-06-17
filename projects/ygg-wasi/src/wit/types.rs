@@ -5,10 +5,6 @@ use crate::exports::peg::core::types::*;
 
 impl Guest for YggdrasilHost {
     type Language = NativeLanguage;
-
-    fn allow_unused_parse_error() -> ParseError {
-        unimplemented!()
-    }
 }
 
 impl GuestLanguage for NativeLanguage {
